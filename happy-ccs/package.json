@@ -1,0 +1,15 @@
+{
+  "name": "happy-ccs",
+  "version": "1.0.0",
+  "description": "Cross-platform bridge between CCS profiles and Happy CLI",
+  "type": "module",
+  "bin": {
+    "happy-ccs": "./scripts/happy-ccs.mjs"
+  },
+  "scripts": {
+    "start": "node scripts/happy-ccs.mjs"
+  },
+  "dependencies": {
+    "yaml": "^2.7.0"
+  }
+}

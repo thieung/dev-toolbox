@@ -1,0 +1,6 @@
+#!/bin/sh
+# happy-ccs - Unix launcher
+# Automatically finds Node.js and runs the main script
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+exec node "$SCRIPT_DIR/happy-ccs.mjs" "$@"
