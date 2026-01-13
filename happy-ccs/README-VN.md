@@ -6,13 +6,30 @@ Chuyển đổi giữa các AI providers (Gemini, GLM, Kimi, v.v.) mà vẫn gi�
 
 **[English](README.md)**
 
+## Yêu cầu
+
+**Bắt buộc:** Cài đặt [Git](https://git-scm.com), [Node.js](https://nodejs.org) (với npm), và [Claude Code](https://code.claude.com/docs/en/setup) trước.
+
+Script cài đặt sẽ tự động cài các CLI tools nếu thiếu:
+- **[CCS](https://github.com/kaitranntt/ccs)**
+- **[Happy CLI](https://github.com/slopus/happy)**
+
 ## Cài đặt
 
 ```bash
+# Clone và di chuyển vào thư mục
 git clone https://github.com/thieung/dev-toolbox.git
 cd dev-toolbox/happy-ccs
-./install.sh        # Mac/Linux
-install.cmd         # Windows
+
+# Mac/Linux
+./install.sh
+
+# Windows PowerShell (chạy as Administrator nếu cần)
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+.\install.ps1
+
+# Windows CMD (chạy as Administrator nếu cần)
+install.cmd
 ```
 
 ## Thiết lập

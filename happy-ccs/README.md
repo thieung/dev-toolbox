@@ -6,13 +6,30 @@ Switch between AI providers (Gemini, GLM, Kimi, etc.) while retaining all Happy 
 
 **[Tiếng Việt](README-VN.md)**
 
+## Prerequisites
+
+**Required:** [Git](https://git-scm.com), [Node.js](https://nodejs.org) (with npm), and [Claude Code](https://code.claude.com/docs/en/setup) must be installed.
+
+The install script will automatically install these CLI tools if missing:
+- **[CCS](https://github.com/kaitranntt/ccs)**
+- **[Happy CLI](https://github.com/slopus/happy)**
+
 ## Installation
 
 ```bash
+# Clone and navigate
 git clone https://github.com/thieung/dev-toolbox.git
 cd dev-toolbox/happy-ccs
-./install.sh        # Mac/Linux
-install.cmd         # Windows
+
+# Mac/Linux
+./install.sh
+
+# Windows PowerShell (run as Administrator if needed)
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+.\install.ps1
+
+# Windows CMD (run as Administrator if needed)
+install.cmd
 ```
 
 ## Setup
