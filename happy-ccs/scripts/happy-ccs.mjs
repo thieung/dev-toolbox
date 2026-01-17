@@ -4,7 +4,7 @@
  * Enables seamless AI provider switching while retaining Happy CLI features
  */
 
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, readdirSync } from 'fs';
 import { spawn } from 'child_process';
 import { homedir } from 'os';
 import { join } from 'path';
@@ -19,6 +19,31 @@ function loadCcsConfig() {
     process.exit(1);
   }
   return parseYaml(readFileSync(CCS_CONFIG, 'utf8'));
+}
+
+function scanSettingsFiles() {
+  const ccsDir = join(homedir(), '.ccs');
+  if (!existsSync(ccsDir)) return {};
+
+  const profiles = {};
+  const files = readdirSync(ccsDir);
+
+  for (const file of files) {
+    if (file.endsWith('.settings.json')) {
+      const name = file.replace('.settings.json', '');
+      const path = join(ccsDir, file);
+      profiles[name] = { settings: path };
+    }
+  }
+  return profiles;
+}
+
+function loadAllProfiles() {
+  const config = loadCcsConfig();
+  const fileProfiles = scanSettingsFiles();
+
+  // Merge: config.yaml profiles override file profiles
+  return { ...fileProfiles, ...config.profiles };
 }
 
 function loadProfileEnv(settingsPath) {
@@ -55,16 +80,15 @@ function main() {
     process.exit(0);
   }
 
-  const config = loadCcsConfig();
+  const profiles = loadAllProfiles();
 
   if (args[0] === '--list' || args[0] === '-l') {
-    listProfiles(config);
+    listProfiles({ profiles });
     process.exit(0);
   }
 
   const profileName = args[0];
   const happyArgs = args.slice(1);
-  const profiles = config.profiles || {};
 
   if (!profiles[profileName]) {
     console.error(`Error: Profile '${profileName}' not found`);
