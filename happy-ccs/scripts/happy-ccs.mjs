@@ -43,7 +43,19 @@ function loadAllProfiles() {
   const fileProfiles = scanSettingsFiles();
 
   // Merge: config.yaml profiles override file profiles
-  return { ...fileProfiles, ...config.profiles };
+  const apiProfiles = { ...fileProfiles, ...config.profiles };
+
+  // Add OAuth accounts from config.accounts (Claude subscription accounts)
+  // Settings are stored at ~/.ccs/instances/<profile_name>/settings.json
+  const oauthAccounts = {};
+  if (config.accounts) {
+    for (const name of Object.keys(config.accounts)) {
+      const settingsPath = join(homedir(), '.ccs', 'instances', name, 'settings.json');
+      oauthAccounts[name] = { type: 'oauth', name, settings: settingsPath };
+    }
+  }
+
+  return { ...apiProfiles, ...oauthAccounts };
 }
 
 function loadProfileEnv(settingsPath) {
@@ -60,8 +72,12 @@ function listProfiles(config) {
   console.log('Available profiles:\n');
   const profiles = config.profiles || {};
   for (const [name, profile] of Object.entries(profiles)) {
-    const settings = profile.settings?.replace(/^~/, homedir()) || 'N/A';
-    console.log(`  ${name.padEnd(12)} -> ${settings}`);
+    if (profile.type === 'oauth') {
+      console.log(`  ${name.padEnd(12)} -> [OAuth Account]`);
+    } else {
+      const settings = profile.settings?.replace(/^~/, homedir()) || 'N/A';
+      console.log(`  ${name.padEnd(12)} -> ${settings}`);
+    }
   }
   console.log('\nUsage: happy-ccs <profile> [happy-cli-args...]');
 }
@@ -97,6 +113,41 @@ function main() {
   }
 
   const profile = profiles[profileName];
+
+  // Handle OAuth accounts (Claude subscription accounts)
+  // Uses CLAUDE_CONFIG_DIR to switch account context
+  if (profile.type === 'oauth') {
+    const configDir = join(homedir(), '.ccs', 'instances', profileName);
+
+    // Dry-run mode for debugging
+    if (happyArgs.includes('--dry-run')) {
+      console.log(`Profile: ${profileName} [OAuth Account]`);
+      console.log(`CLAUDE_CONFIG_DIR: ${configDir}`);
+      console.log(`Command: happy ${happyArgs.filter(a => a !== '--dry-run').join(' ')}`);
+      process.exit(0);
+    }
+
+    console.log(`Starting Happy CLI with OAuth account: ${profileName}`);
+
+    // Spawn happy with CLAUDE_CONFIG_DIR set to the account's instance directory
+    const child = spawn('happy', happyArgs, {
+      stdio: 'inherit',
+      shell: process.platform === 'win32',
+      env: { ...process.env, CLAUDE_CONFIG_DIR: configDir },
+    });
+
+    child.on('error', (err) => {
+      console.error(`Error starting happy: ${err.message}`);
+      process.exit(1);
+    });
+
+    child.on('close', (code) => {
+      process.exit(code || 0);
+    });
+    return;
+  }
+
+  // Handle API profiles (with settings.json)
   const envVars = loadProfileEnv(profile.settings);
 
   // Build happy CLI args with --claude-env flags
