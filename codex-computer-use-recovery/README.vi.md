@@ -104,8 +104,3 @@ bundled_plugins_runtime_marketplace_written pluginCount=1 pluginNames=["latex"]
 bundled_plugin_uninstall_requested pluginId=chrome@openai-bundled reason=not_in_bundled_marketplace_plugin_names
 bundled_plugin_uninstall_requested pluginId=computer-use@openai-bundled reason=not_in_bundled_marketplace_plugin_names
 ```
-
-Câu hỏi còn mở:
-
-- Account/workspace này có được expect là phải có Computer Use không?
-- Đây là temporary staged rollout state hay persistent entitlement/config issue?

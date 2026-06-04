@@ -104,8 +104,3 @@ bundled_plugins_runtime_marketplace_written pluginCount=1 pluginNames=["latex"]
 bundled_plugin_uninstall_requested pluginId=chrome@openai-bundled reason=not_in_bundled_marketplace_plugin_names
 bundled_plugin_uninstall_requested pluginId=computer-use@openai-bundled reason=not_in_bundled_marketplace_plugin_names
 ```
-
-Unresolved questions:
-
-- Is the account/workspace expected to have Computer Use enabled?
-- Is this a temporary staged rollout state or a persistent entitlement/config issue?
