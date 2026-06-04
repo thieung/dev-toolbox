@@ -1,20 +1,22 @@
 # Codex Computer Use recovery
 
-Post + workaround cho lỗi Codex App hiển thị **Computer use** hoặc Chrome control bị disabled sau khi restart app.
+Recovery script and root-cause note for the Codex App issue where **Computer use** or Chrome control stays disabled after restarting the app.
 
-## Tóm tắt
+Vietnamese version: [README.vi.md](./README.vi.md)
 
-Local setup có thể repair tạm thời, nhưng Codex App có thể tự undo phần repair đó sau mỗi lần startup.
+## Summary
 
-Root cause quan sát được không phải do lệnh cài standalone Codex:
+The local setup can be repaired temporarily, but Codex App may undo that repair on every startup.
+
+The observed root cause is not the standalone Codex install command:
 
 ```bash
 curl -fsSL https://chatgpt.com/codex/install.sh | sh
 ```
 
-Root cause là Codex App đang resolve availability của Browser/Computer Use thành disabled từ feature gate hoặc account entitlement phía App/OpenAI. Khi startup, Codex App coi trạng thái server-side này là source of truth, rồi reconcile local bundled plugins về đúng danh sách được allow.
+The root cause is that Codex App resolves Browser/Computer Use availability as disabled from the app-side feature gate or account entitlement. On startup, Codex App treats that server-side state as source of truth, then reconciles local bundled plugins back to the allowed list.
 
-Bằng chứng trong log:
+Observed log evidence:
 
 ```text
 browser_use_availability_resolved available=false reason=statsig-disabled
@@ -23,51 +25,51 @@ bundled_plugin_uninstall_requested pluginId=chrome@openai-bundled reason=not_in_
 bundled_plugin_uninstall_requested pluginId=computer-use@openai-bundled reason=not_in_bundled_marketplace_plugin_names
 ```
 
-Nói ngắn gọn:
+In plain terms:
 
-- CLI workaround có thể re-add `chrome@openai-bundled` và `computer-use@openai-bundled`.
-- Manual MCP entry có thể làm `computer-use` available trong Codex thread.
-- Nhưng khi quit Codex App và mở lại, app chạy startup reconciliation.
-- Nếu app vẫn nhận `reason=statsig-disabled`, nó rewrite bundled marketplace chỉ còn `latex`.
-- Sau đó app uninstall hoặc disable lại `chrome` và `computer-use`.
+- The CLI workaround can re-add `chrome@openai-bundled` and `computer-use@openai-bundled`.
+- The manual MCP entry can make `computer-use` available to Codex threads.
+- But when Codex App is quit and opened again, the app runs startup reconciliation.
+- If the app still receives `reason=statsig-disabled`, it rewrites the bundled marketplace to only `latex`.
+- Then it uninstalls or disables `chrome` and `computer-use` again.
 
-Đây là lý do workaround bị reset sau mỗi lần restart Codex App.
+That is why the workaround is reset after every Codex App restart.
 
-## Đây có phải bug của OpenAI không?
+## Is this an OpenAI bug?
 
-Nếu account/workspace lẽ ra phải có Computer Use, thì đây trông giống OpenAI-side rollout, feature flag, hoặc entitlement bug.
+If the account/workspace is supposed to have Computer Use, this looks like an OpenAI-side rollout, feature flag, or entitlement bug.
 
-Không thể khẳng định 100% là product bug trong mọi trường hợp, vì cùng symptom này cũng có thể xảy ra khi feature bị disable có chủ đích do account policy, organization policy, region, hoặc staged rollout.
+It is not proven to be a product bug in all cases because the same symptoms can also happen when the feature is intentionally unavailable due to account policy, organization policy, region, or staged rollout.
 
-Wording chính xác nhất để report support:
+The most accurate support wording:
 
 > Codex App disables Computer Use after restart because Browser/Computer Use availability resolves as `statsig-disabled`. On startup, the app reconciles bundled plugins to only `latex` and uninstalls `chrome@openai-bundled` plus `computer-use@openai-bundled`.
 
 ## Workaround
 
-Sau khi mở Codex App, chạy script:
+After opening Codex App, run:
 
 ```bash
-./recover-computer-use-after-restart.sh
+./scripts/recover-computer-use-after-restart.sh
 ```
 
-Sau đó start một Codex thread mới để MCP server và plugin state được load vào session mới.
+Then start a new Codex thread so the MCP server and plugin state are loaded in the new session.
 
-Script sẽ:
+The script:
 
-- reset `openai-bundled` marketplace về bundled marketplace nằm trong `/Applications/Codex.app`
-- re-add `chrome@openai-bundled`
-- re-add `computer-use@openai-bundled`
-- refresh manual `computer-use` MCP server
+- resets the `openai-bundled` marketplace to the bundled marketplace inside `/Applications/Codex.app`
+- re-adds `chrome@openai-bundled`
+- re-adds `computer-use@openai-bundled`
+- refreshes the manual `computer-use` MCP server
 
-Script này không ép được disabled toggle trong Settings bật lên. Nếu app vẫn nhận `statsig-disabled`, Settings UI vẫn có thể disabled. Workaround chỉ restore local CLI/MCP path sau khi startup reconciliation đã chạy xong.
+This script does not force the disabled Settings toggle to turn on. If the app still receives `statsig-disabled`, the Settings UI can remain disabled. The workaround only restores the local CLI/MCP path after startup reconciliation has already run.
 
 ## Requirements
 
 - macOS
-- Codex App installed ở `/Applications/Codex.app`
-- `codex` CLI available trong `PATH`
-- Computer Use helper installed ở:
+- Codex App installed at `/Applications/Codex.app`
+- `codex` CLI available on `PATH`
+- Computer Use helper installed at:
 
 ```text
 ~/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient
@@ -75,7 +77,7 @@ Script này không ép được disabled toggle trong Settings bật lên. Nếu
 
 ## Verify
 
-Sau khi chạy script, verify:
+After running the script, verify:
 
 ```bash
 codex plugin list
@@ -90,11 +92,11 @@ computer-use@openai-bundled  installed, enabled
 computer-use                 enabled
 ```
 
-Nếu restart Codex App, chạy script lại.
+If Codex App is restarted, run the script again.
 
 ## Support payload
 
-Khi report OpenAI support, gửi kèm các log lines này:
+When reporting to OpenAI support, include these log lines:
 
 ```text
 browser_use_availability_resolved available=false reason=statsig-disabled
@@ -103,7 +105,7 @@ bundled_plugin_uninstall_requested pluginId=chrome@openai-bundled reason=not_in_
 bundled_plugin_uninstall_requested pluginId=computer-use@openai-bundled reason=not_in_bundled_marketplace_plugin_names
 ```
 
-Câu hỏi còn mở:
+Unresolved questions:
 
-- Account/workspace này có được expect là phải có Computer Use không?
-- Đây là temporary staged rollout state hay persistent entitlement/config issue?
+- Is the account/workspace expected to have Computer Use enabled?
+- Is this a temporary staged rollout state or a persistent entitlement/config issue?
