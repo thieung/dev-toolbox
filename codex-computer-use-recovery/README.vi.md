@@ -47,7 +47,13 @@ Wording chính xác nhất để report support:
 
 ## Workaround
 
-Sau khi mở Codex App, chạy script:
+Sau khi mở Codex App, chạy trực tiếp:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/thieung/dev-toolbox/main/codex-computer-use-recovery/scripts/recover-computer-use-after-restart.sh | bash
+```
+
+Hoặc từ local checkout:
 
 ```bash
 ./scripts/recover-computer-use-after-restart.sh

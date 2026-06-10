@@ -47,7 +47,13 @@ The most accurate support wording:
 
 ## Workaround
 
-After opening Codex App, run:
+After opening Codex App, run directly:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/thieung/dev-toolbox/main/codex-computer-use-recovery/scripts/recover-computer-use-after-restart.sh | bash
+```
+
+Or from a local checkout:
 
 ```bash
 ./scripts/recover-computer-use-after-restart.sh
